@@ -4,6 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @Order(2)
+@Slf4j
 public class RateLimitFilter extends OncePerRequestFilter {
 
     private final Map<String, Window> clientWindows = new ConcurrentHashMap<>();
@@ -27,13 +30,13 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private int maxRequests;
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
+    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
         String path = request.getRequestURI();
         return path.startsWith("/actuator/health");
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
         String clientKey = resolveClientKey(request);
         long now = Instant.now().getEpochSecond();
@@ -46,12 +49,14 @@ public class RateLimitFilter extends OncePerRequestFilter {
             }
             window.count++;
             if (window.count > maxRequests) {
+                log.warn("rate_limited path={} client_key={} count={} window_seconds={}", request.getRequestURI(), clientKey, window.count, windowSeconds);
                 response.setStatus(429);
                 response.setContentType("application/json");
                 response.getWriter().write("{\"error\":\"Too Many Requests\"}");
                 return;
             }
         }
+        log.debug("rate_limit_ok path={} client_key={} count={} window_seconds={}", request.getRequestURI(), clientKey, window.count, windowSeconds);
         filterChain.doFilter(request, response);
     }
 

@@ -1,7 +1,13 @@
 <configuration>
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+      <customFields>{"service":"rag-chat-service"}</customFields>
+    </encoder>
   </appender>
+
+  <logger name="org.springframework" level="INFO" />
+  <logger name="org.hibernate.SQL" level="WARN" />
+  <logger name="com.example.ragchat" level="INFO" />
 
   <root level="INFO">
     <appender-ref ref="STDOUT" />

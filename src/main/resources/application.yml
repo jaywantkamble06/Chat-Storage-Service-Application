@@ -24,7 +24,8 @@ management:
         include: health,info
 
 app:
-  api-key: ${API_KEY:change-me}
+  # Comma-separated list of API keys for demo/multiple keys
+  api-keys: ${API_KEYS:change-me}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
   rate-limit:
