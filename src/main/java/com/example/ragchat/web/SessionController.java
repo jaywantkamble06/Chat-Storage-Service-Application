@@ -34,14 +34,14 @@ public class SessionController {
 
     @GetMapping
     @Operation(summary = "List chat sessions for a user")
-    public ResponseEntity<Page<ChatSession>> list(@RequestParam String userId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+    public ResponseEntity<Page<ChatSession>> list(@RequestParam("userId") String userId, @RequestParam(name = "page", defaultValue = "0") int page, @RequestParam(name = "size", defaultValue = "20") int size) {
         log.info("list_sessions user_id={} page={} size={}", userId, page, size);
         return ResponseEntity.ok(sessionService.listSessions(userId, page, size));
     }
 
     @PatchMapping("/{id}/title")
     @Operation(summary = "Rename a chat session")
-    public ResponseEntity<SessionResponse> rename(@PathVariable UUID id, @RequestParam String userId, @Valid @RequestBody RenameSessionRequest req) {
+    public ResponseEntity<SessionResponse> rename(@PathVariable("id") UUID id, @RequestParam("userId") String userId, @Valid @RequestBody RenameSessionRequest req) {
         log.info("rename_session id={} user_id={} title_length={}", id, userId, req.title() != null ? req.title().length() : 0);
         ChatSession s = sessionService.rename(id, userId, req.title());
         return ResponseEntity.ok(sessionMapper.toResponse(s));
@@ -49,7 +49,7 @@ public class SessionController {
 
     @PatchMapping("/{id}/favorite")
     @Operation(summary = "Toggle favorite flag")
-    public ResponseEntity<SessionResponse> favorite(@PathVariable UUID id, @RequestParam String userId, @Valid @RequestBody ToggleFavoriteRequest req) {
+    public ResponseEntity<SessionResponse> favorite(@PathVariable("id") UUID id, @RequestParam("userId") String userId, @Valid @RequestBody ToggleFavoriteRequest req) {
         log.info("toggle_favorite id={} user_id={} favorite={}", id, userId, req.favorite());
         ChatSession s = sessionService.toggleFavorite(id, userId, req.favorite());
         return ResponseEntity.ok(sessionMapper.toResponse(s));
@@ -57,7 +57,7 @@ public class SessionController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete session and its messages")
-    public ResponseEntity<Void> delete(@PathVariable UUID id, @RequestParam String userId) {
+    public ResponseEntity<Void> delete(@PathVariable("id") UUID id, @RequestParam("userId") String userId) {
         log.info("delete_session id={} user_id={} ", id, userId);
         sessionService.delete(id, userId);
         return ResponseEntity.noContent().build();

@@ -29,7 +29,7 @@ public class MessageController {
 
     @PostMapping
     @Operation(summary = "Add a message to a session")
-    public ResponseEntity<MessageResponse> add(@PathVariable UUID sessionId, @RequestParam String userId, @Valid @RequestBody AddMessageRequest req) {
+    public ResponseEntity<MessageResponse> add(@PathVariable("sessionId") UUID sessionId, @RequestParam("userId") String userId, @Valid @RequestBody AddMessageRequest req) {
         log.info("add_message session_id={} user_id={} sender={} has_context={}", sessionId, userId, req.sender(), req.context() != null && !req.context().isBlank());
         ChatSession s = sessionService.getOwned(sessionId, userId);
         ChatMessage m = messageService.addMessage(s, req.sender(), req.content(), req.context());
@@ -38,7 +38,7 @@ public class MessageController {
 
     @GetMapping
     @Operation(summary = "List messages in a session (paginated)")
-    public ResponseEntity<Page<ChatMessage>> list(@PathVariable UUID sessionId, @RequestParam String userId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int size) {
+    public ResponseEntity<Page<ChatMessage>> list(@PathVariable("sessionId") UUID sessionId, @RequestParam("userId") String userId, @RequestParam(name = "page", defaultValue = "0") int page, @RequestParam(name = "size", defaultValue = "50") int size) {
         log.info("list_messages session_id={} user_id={} page={} size={}", sessionId, userId, page, size);
         ChatSession s = sessionService.getOwned(sessionId, userId);
         return ResponseEntity.ok(messageService.listMessages(s, page, size));
