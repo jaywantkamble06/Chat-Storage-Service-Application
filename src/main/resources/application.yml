@@ -37,4 +37,10 @@ logging:
     root: INFO
     org.springframework.web: INFO
 
+ai:
+  openai:
+    api-key: ${OPENAI_API_KEY:}
+    model: ${OPENAI_MODEL:gpt-4o-mini}
+    api-url: ${OPENAI_API_URL:https://api.openai.com/v1/chat/completions}
+
 

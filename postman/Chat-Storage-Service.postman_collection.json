@@ -1,0 +1,127 @@
+{
+  "info": {
+    "name": "Chat Storage Service - Demo",
+    "_postman_id": "3a5d9e78-2f3a-4c9a-9d0a-aaa000000002",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1) Create Session",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "X-API-KEY", "value": "{{apiKey}}"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "url": {"raw": "{{baseUrl}}/api/sessions", "host": ["{{baseUrl}}"], "path": ["api","sessions"]},
+        "body": {"mode": "raw", "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"title\": \"Demo chat\"\n}"}
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "let json = pm.response.json();",
+              "pm.environment.set('sessionId', json.id);",
+              "pm.test('Created session', function(){ pm.expect(pm.response.code).to.be.oneOf([200,201]); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2) Add User Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "X-API-KEY", "value": "{{apiKey}}"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "url": {"raw": "{{baseUrl}}/api/sessions/{{sessionId}}/messages?userId={{userId}}", "host": ["{{baseUrl}}"], "path": ["api","sessions","{{sessionId}}","messages"], "query":[{"key":"userId","value":"{{userId}}"}]},
+        "body": {"mode": "raw", "raw": "{\n  \"sender\": \"USER\",\n  \"content\": \"Hello, can you summarize RAG?\",\n  \"context\": \"\"\n}"}
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "let json = pm.response.json();",
+              "pm.environment.set('messageId', json.id);",
+              "pm.test('Added message', function(){ pm.expect(pm.response.code).to.eql(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3) List Messages",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "X-API-KEY", "value": "{{apiKey}}"}],
+        "url": {"raw": "{{baseUrl}}/api/sessions/{{sessionId}}/messages?userId={{userId}}&page=0&size=50", "host": ["{{baseUrl}}"], "path": ["api","sessions","{{sessionId}}","messages"], "query":[{"key":"userId","value":"{{userId}}"},{"key":"page","value":"0"},{"key":"size","value":"50"}]}
+      },
+      "event": [
+        {"listen": "test", "script": {"exec": ["pm.test('Listed messages', function(){ pm.expect(pm.response.code).to.eql(200); });"], "type":"text/javascript"}}
+      ]
+    },
+    {
+      "name": "4) Agent Reply",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "X-API-KEY", "value": "{{apiKey}}"}],
+        "url": {"raw": "{{baseUrl}}/api/sessions/{{sessionId}}/agent/reply?userId={{userId}}&systemPrompt={{systemPrompt}}", "host": ["{{baseUrl}}"], "path": ["api","sessions","{{sessionId}}","agent","reply"], "query":[{"key":"userId","value":"{{userId}}"},{"key":"systemPrompt","value":"{{systemPrompt}}"}]}
+      },
+      "event": [
+        {"listen": "test", "script": {"exec": ["pm.test('Agent replied', function(){ pm.expect(pm.response.code).to.eql(200); });"], "type":"text/javascript"}}
+      ]
+    },
+    {
+      "name": "5) Rename Session",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {"key": "X-API-KEY", "value": "{{apiKey}}"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "url": {"raw": "{{baseUrl}}/api/sessions/{{id}}/title?userId={{userId}}", "host": ["{{baseUrl}}"], "path": ["api","sessions","{{id}}","title"], "query":[{"key":"userId","value":"{{userId}}"}]},
+        "body": {"mode": "raw", "raw": "{\n  \"title\": \"Demo chat (renamed)\"\n}"}
+      },
+      "event": [
+        {"listen": "prerequest", "script": {"exec": ["pm.request.url.variables.set('id', pm.environment.get('sessionId'));"], "type":"text/javascript"}},
+        {"listen": "test", "script": {"exec": ["pm.test('Renamed', function(){ pm.expect(pm.response.code).to.eql(200); });"], "type":"text/javascript"}}
+      ]
+    },
+    {
+      "name": "6) Favorite Session",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {"key": "X-API-KEY", "value": "{{apiKey}}"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "url": {"raw": "{{baseUrl}}/api/sessions/{{id}}/favorite?userId={{userId}}", "host": ["{{baseUrl}}"], "path": ["api","sessions","{{id}}","favorite"], "query":[{"key":"userId","value":"{{userId}}"}]},
+        "body": {"mode": "raw", "raw": "{\n  \"favorite\": true\n}"}
+      },
+      "event": [
+        {"listen": "prerequest", "script": {"exec": ["pm.request.url.variables.set('id', pm.environment.get('sessionId'));"], "type":"text/javascript"}},
+        {"listen": "test", "script": {"exec": ["pm.test('Favorited', function(){ pm.expect(pm.response.code).to.eql(200); });"], "type":"text/javascript"}}
+      ]
+    },
+    {
+      "name": "7) Delete Session",
+      "request": {
+        "method": "DELETE",
+        "header": [{"key": "X-API-KEY", "value": "{{apiKey}}"}],
+        "url": {"raw": "{{baseUrl}}/api/sessions/{{id}}?userId={{userId}}", "host": ["{{baseUrl}}"], "path": ["api","sessions","{{id}}"], "query":[{"key":"userId","value":"{{userId}}"}]}
+      },
+      "event": [
+        {"listen": "prerequest", "script": {"exec": ["pm.request.url.variables.set('id', pm.environment.get('sessionId'));"], "type":"text/javascript"}},
+        {"listen": "test", "script": {"exec": ["pm.test('Deleted', function(){ pm.expect(pm.response.code).to.be.oneOf([200,204]); });"], "type":"text/javascript"}}
+      ]
+    }
+  ]
+}
+
+
